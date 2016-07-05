@@ -1,0 +1,110 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{color}
+%\usepackage{hyperref}
+\theoremstyle{definition}
+\setlength{\parindent}{0pt}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{cor}{Corollary}[section]
+\newtheorem{conj}{Conjecture}[section]
+\newtheorem{prop}{Proposition}[section]
+
+\providecommand{\abs}[1]{\lvert#1\rvert}
+\providecommand{\norm}[1]{\lVert#1\rVert}
+
+\title{DB Summer challenge 2016: Model descriptions}
+\author{Team: More risk more fun \\
+		Members: D. Be{\ss}lich,  B. Stemper, J. Sternberg}
+
+\begin{document}
+	
+	\maketitle
+	
+	In this paper, we outline the algorithms used for the various exercises, together with the assumptions that led us to their adoption.
+	
+	\section*{Exercise 1}
+	
+	In the first exercise, it is required to compute the 1-day VaR at the $99\%$ confidence level for a stock-only portfolio. Damodaran  (cite, p. 20) claims that the variance-covariance method poses a suitable method for this purpose since the time horizon is short and the portfolio does not contain derivatives. In our code, we make use of the following two critical assumptions:
+	
+	\begin{itemize}
+	
+	\item We assume that daily log returns (or equivalently daily changes of log prices)
+	 are normally distributed. While it is a stylized fact that this assumption does not 
+	 hold in reality, we nevertheless use it as it dramatically simplifies calculations
+	  and is a common assumption in industry, with the very popular Black-Scholes 
+	  framework being a model that uses this assumption in particular. Since we are
+	   going to make use of the Black-Scholes framework (and in particular its Greeks) 
+	   in the following exercise, this provides some kind of consistency between our
+	    models/algorithms for our portfolios with and without derivatives.
+	    
+	\item The expectation and covariance matrix used in our framework do not use the uniform probability measure, 
+	but instead a weighted probability measure which places a higher emphasis on recent events compared to past events in order to capture possible trends in the data. In particular, we use the discrete probability measure $\mathbb{P}^T$ on $\{1,\dots,T\}$ with $\sigma$-algebra $\mathcal{F}=\mathcal{P}(\{1,\dots,T\})$ and
+	\[
+		\mathbb{P}^T(\{i\}):=\frac{i}{\frac{T(T+1)}{2}}=\frac{2i}{T(T+1)}
+	\]
+	for $i\in \{1,\dots,T\}$.
+
+	
+	\item For computational reasons, we also linearise our daily loss function $L_{T+1}$. The concrete formula we use is that in \cite{QRM}, see in particular formula $(2.8)$ on page $29$:
+	
+	\begin{align*}
+	L_{t+1} = \sum_{i=1}^{15} \lambda_i S_{t,i}X_{t+1,i},
+	\end{align*}
+	
+	where $\lambda$ represents the position of our portfolio in the respective assets, 
+	$X_{t+1,i}=\ln(S_{t+1,i})-\ln(S_{t,i})$ are
+	the log returns of asset $i$ at time $t+1$ (which is random at time $t$) 
+	and $S_{t,i}$ represents the stock price of asset $i$ at time $t$.
+	\end{itemize}
+	
+	Algebraic computations give the parameters of the normally distributed random variable $L_{t+1}$ and then the 'inverse Gaussian' yields the required quantile.
+	
+	
+	\section*{Exercise 2}
+	
+	In this exercise, we are required to compute the 1-day VaR at the $99\%$ confidence level for a portfolio comprising both stocks as well as European call options on these stocks. In line with standard risk management practice, we determine the relevant risk factors to be the daily log changes of the respective underlyings as well as the changes in implied vol, ignoring changes in interest rates since these are assumed to be deterministically zero. As in exercise (1), we use the weighted variance-covariance method for the log-returns and then approximate the non-linear changes in value of our option portfolio by a first-order approximation using the various Greeks in the Black-Scholes framework. In particular, using all our weighted log-returns from the past, we compute daily realized variance, annualize it by multiplying it by 260 (the number of trading days per year) and squaring it to get a proxy for implied vol (see formula (1) on  p. 6 in \cite{EG06}). As a proxy for our daily implied vol changes, we then use this yearly implied vol proxy divided by 260. Consequently, our daily loss function is a small extension of the formula proposed in \cite{QRM}:
+	
+	\begin{align*}
+	L_{t+1} = \sum_{i=1}^{15} \left[(\lambda_i + \phi_i C^{\text{BS}}_{i,S})  S_{t,i} X_{t+1,i} + \phi_i C^{\text{BS}}_{i, \sigma} (\sigma_{t+1,i} - \sigma_{t,i}) + \phi_i C^{\text{BS}}_{i,t} \cdot 1/260 \right]
+	\end{align*}
+	
+	where the the variables are parametrised such that for example $C^{\text{BS}}_{i,t}$ denotes the \emph{Black Scholes theta} of asset $i$, $\lambda_i$ denotes holdings of asset $i$, $\phi_i$ holdings of European calls on asset $i$ and the rest as before in exercise (1). Algebraic computations give the parameters of the normally distributed random variable $L_{t+1}$ and then the 'inverse Gaussian' yields the required quantile.
+	
+	
+	\section*{Exercise 3}
+	
+	In this exercise, it is required to compute the 1-day VaR at the $99\%$ confidence level for a portfolio containing only European put options. Thanks to an intricate relationship between the values/prices of European puts and calls, known as \emph{put-call-parity} \cite{G03}, we may reuse the code from exercise (2) by only slightly changing some of the Greeks. In a zero-interest rate world, \emph{put-call-parity} is given by	
+	\begin{align*}
+	C^{\text{BS}}- P^{\text{BS}} = S - K
+	\end{align*}
+	
+	Differentiating on both sides then yields the relationship between the Greeks of the two different types of European call options:
+	
+	\begin{align}
+	\text{delta} &= \frac{\partial P^{\text{BS}}}{\partial S} = \frac{\partial C^{\text{BS}}}{\partial S} -1  \\
+	\text{vega} &= \frac{\partial P^{\text{BS}}}{\partial \sigma} = \frac{\partial C^{\text{BS}}}{\partial \sigma} \\
+	\text{theta} &= \frac{\partial P^{\text{BS}}}{\partial t} = \frac{\partial C^{\text{BS}}}{\partial t}
+	\end{align}
+	
+	From the above, we observe that the only thing we need to change in our code compared to exercise (2) is the delta (in effect, we only need to substract a factor $1$) and we are done.
+	
+	
+	
+	\section*{Exercise 4}
+	
+	
+
+\bibliography{Literatur}
+\bibliographystyle{apalike}
+\end{document}
