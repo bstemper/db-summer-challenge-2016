@@ -133,7 +133,7 @@ VaR = zeros(number_trading_days-1-learning,1);
 Actual_Loss = zeros(number_trading_days-1-learning,1);
 counter=0;
 
-V=var_pointer_calibration(131,262,prices(:,1:262),daily_log_changes(:,1:262),conf_level,V,M);
+%V=var_pointer_calibration(131,262,prices(:,1:262),daily_log_changes(:,1:262),conf_level,V,M);
 
 % Iterate through enumerated trading days, so 
 
@@ -213,7 +213,7 @@ for T = learning:number_trading_days
         X=W+(diag(mu)-1/2*diag(diag(Sigma)))*ones(number_assets,N);
         Future=diag(prices(:,T))*exp(X);
         
-        X_dax=sqrt(vdax(T))*normrnd(0,1,1,N)+mu_dax*ones(1,N)-1/2*vdax(T)*ones(1,N);
+        X_dax=vdax(T)*normrnd(0,1,1,N)+mu_dax*ones(1,N)-1/2*vdax(T)^2*ones(1,N);
         Future_dax=dax(T)*exp(X_dax);   
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -223,7 +223,7 @@ for T = learning:number_trading_days
         Loss_assets=position_assets*(Future(:,1:N)-prices(:,T)*ones(1,N));
         Loss_calls=position_calls*(BS_call(Future,strikes_calls(:)*ones(1,N),max((time_to_maturity_calls(:)-1),0)*ones(1,N),0,(diag(Sigma)+ann_vol/260)*ones(1,N))-call_values(:,T)*ones(1,N));  
         Loss_puts=position_puts*(BS_put(Future,strikes_puts(:)*ones(1,N),max((time_to_maturity_puts(:)-1),0)*ones(1,N),0,(diag(Sigma)+ann_vol/260)*ones(1,N))-put_values(:,T)*ones(1,N));  
-        Loss_uoc=infos_uoc(1)*(UO_call(Future_dax,strike_uoc,max((time_to_maturity_uoc(:)-1),0),barrier_uoc,sqrt(vdax(T)))-uoc_values(T));
+        Loss_uoc=infos_uoc(1)*(UO_call(Future_dax,strike_uoc,max((time_to_maturity_uoc-1),0),barrier_uoc,vdax(T))-uoc_values(T));
         Loss=Loss_assets+Loss_calls+Loss_puts+Loss_uoc;
         
         Sorted_Loss=sort(Loss);
@@ -231,10 +231,11 @@ for T = learning:number_trading_days
         if T== number_trading_days
             Actual_Loss(T-learning+1)=0;
         else
-            Actual_Loss_assets=position_assets * (prices(:,T+1)-prices(:,T));
-            Actual_Loss_calls=position_calls*(BS_call(prices(:,T+1),strikes_calls(:),max(time_to_maturity_calls(:)-1,0),0,diag(Sigma))-call_values(:,T));
-            Actual_Loss_puts=position_puts*(BS_put(prices(:,T+1),strikes_puts(:),max(time_to_maturity_puts(:)-1,0),0,diag(Sigma))-put_values(:,T));
-            Actual_Loss_uoc=infos_uoc(1)*(UO_call(dax(T+1),strike_uoc,max(time_to_maturity_uoc-1,0),barrier_uoc,sqrt(vdax(T)))-uoc_values(T));
+            Actual_Loss_assets=position_assets * (prices(:,T+1)-prices(:,T))
+            
+            Actual_Loss_calls=position_calls*(BS_call(prices(:,T+1),strikes_calls(:),max(time_to_maturity_calls(:)-1,0),0,diag(Sigma))-call_values(:,T))
+            Actual_Loss_puts=position_puts*(BS_put(prices(:,T+1),strikes_puts(:),max(time_to_maturity_puts(:)-1,0),0,diag(Sigma))-put_values(:,T))
+            Actual_Loss_uoc=infos_uoc(1)*(UO_call(dax(T+1),strike_uoc,max(time_to_maturity_uoc-1,0),barrier_uoc,vdax(T))-uoc_values(T))
             Actual_Loss(T-learning+1) = Actual_Loss_assets+Actual_Loss_calls+Actual_Loss_puts+Actual_Loss_uoc;
         end
         
