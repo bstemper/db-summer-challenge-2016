@@ -56,23 +56,6 @@ VaR = zeros(number_trading_days-261,1);
 %% VaR computation
 
 for T = 262:number_trading_days
-
-%     %% Computing weighted variance of plain prices
-%     
-%     % No glimpse into the future. truncated_prices = prices(1:15,1:T);
-%     
-%     % Computing weights used in next section. weighting = zeros(T,1);
-%     factor = 2/(T*(T+1));
-%     
-%     for k=1:T
-%         weighting(k,1) = k*factor;
-%     end
-%     
-%     % Computing mean and variance of reweighted plain prices
-%     w_prices_mean = truncated_prices * weighting; centralized_data =
-%     truncated_prices - w_prices_mean * ones(1,size(truncated_prices,2));
-%     weight_diag = diag(weighting); w_prices_Sigma =
-%     centralized_data*weight_diag*transpose(centralized_data);
     
     %% Computing weighted mean and variance of Gaussian joint log returns.
     
