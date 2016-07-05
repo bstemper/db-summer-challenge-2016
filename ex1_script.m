@@ -64,13 +64,10 @@ for T = 262:number_trading_days
    
     % weighting more recent values for mu and sigma higher than past values
     weighting = zeros(T-1,1);
-    Tea = 2/(T*(T-1));
+    factor = 2/(T*(T-1));
     
     for k = 1:T-1
-        weighting(k,1) = k*Tea;
-        
-        % Classical weighting
-        % weighting(k,1)=1/(T-1); 
+        weighting(k,1) = k*factor;
     end
     
     %%%%%%      Weighted VAR        %%%%%%%
@@ -90,24 +87,7 @@ for T = 262:number_trading_days
     % Using inverse Gaussian to compute quantile
     stdv_positionW = sqrt(variance_positionW);
     VaR(T-261)=norminv(1-conf_level, mean_positionW, stdv_positionW);
-
     
-%%%%%%%%%%%%%      Old VAR        %%%%%%%
-%     
-%     % Computation of mean and covariance of changes
-%     mu = mean(truncated_data,2);
-%     Sigma = cov(transpose(truncated_data));
-%     
-%     % Assuming joint Gaussianity of log returns, we compute the parameters
-%     % of the Gaussian linearized loss function.
-%      weights = (position .* transpose(prices(:,T)));
-%      mean_position = weights * mu;
-%     variance_position = weights * Sigma * transpose(weights);
-%     
-%     % Using inverse Gaussian to compute quantile
-%     stdv_position = sqrt(variance_position);
-%     VaR = [VaR; norminv(1-conf_level, mean_position, stdv_position)];
-%     VaRP(T-260)=norminv(1-conf_level,mean_position,stdv_position);    
 end
 
 %% CSV file writing
