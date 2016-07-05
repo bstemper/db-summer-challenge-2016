@@ -12,10 +12,10 @@ load('trading_days.mat');
 tic;
 
 %% Inputs
-position_shares = [1,-2,3,-4,5,-6,7,-8,9,-10,11,-12,13,-14,15];
-position_calls = [15,-14,13,-12,11,-10,9,-8,7,-6,5,-4,3,-2,1];
-moneyness = [1,0.9,0.7,1.2,2,0.5,1,0.8,1,3,1.1,1.2,0.7,1.4,1.5];
-maturity = [5,6,7,8,9,0.25,0.5,0.75,1,1.25,1.5,1.75,1.75,2,2.25];
+position_shares = [0,0,0,0,0,0,0,0,0,0,628, 0,0,0,0];
+position_calls = [0,0,0,0,0,0,0,0,0, 0,-1000, 0,0,0,0];
+moneyness = [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0];
+maturity = [0,0,0,0,0,0,0,0,0,0,7,0,0,0,0];
 
 
 % data_file: market data CSV file to read
@@ -32,8 +32,8 @@ prices = transpose(csvread(data_file,1,1));
 % transforming prices to log prices, leaving DAX & VDAX unaffected
 log_prices = log(prices(1:15,1:end));
 
-% transforming moneyness to strikes (strike * spot price on 3rd Jan 2011)
-strikes = moneyness .* transpose(prices(1:15,262));
+% transforming moneyness to strikes (spot price (on 3rd Jan 2011) / moneyness)
+strikes = transpose(prices(1:15,262)) ./ moneyness;
 
 % initializing daily log changes
 [number_assets, number_trading_days] = size(log_prices);
@@ -141,6 +141,6 @@ output = [trading_days(262:end),VaR];
 
 % using S. Fiedlers cell2csv function to write csv file (standard csv write
 % only works for numeric values)
-cell2csv('More_risk_more_fun_Ex2i.csv',output);
+cell2csv('More_risk_more_fun_Ex2iii.csv',output);
 toc;
 
