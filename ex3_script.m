@@ -32,7 +32,7 @@ prices = transpose(csvread(data_file,1,1));
 % transforming prices to log prices, leaving DAX & VDAX unaffected
 log_prices = log(prices(1:15,1:end));
 
-% transforming moneyness to strikes (strike * spot price on 3rd Jan 2011)
+% transforming moneyness to strikes (moneyness * spot price on 3rd Jan 2011)
 strikes = moneyness .* transpose(prices(1:15,262));
 
 % initializing daily log changes

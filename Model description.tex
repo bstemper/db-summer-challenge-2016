@@ -84,12 +84,18 @@
 	
 	\section*{Exercise 3}
 	
-	In this exercise, it is required to compute the 1-day VaR at the $99\%$ confidence level for a portfolio containing only European put options. Thanks to an intricate relationship between the values/prices of European puts and calls, known as \emph{put-call-parity} \cite{G03}, we may reuse the code from exercise (2) by only slightly changing some of the Greeks. In a zero-interest rate world, \emph{put-call-parity} is given by	
+	In this exercise, it is required to compute the 1-day VaR at the $99\%$ confidence level for a portfolio containing only European put options. There are two things that we have to be careful about:
+	
+	\begin{itemize}
+	
+	\item Definitions of moneyness differ for puts and calls. Intuitively, we want a value larger than 1 to mean that the option is in the money. Consequently, moneyness for calls is commonly defined to be spot/strike and moneyness for puts to be strike/spot. In our code we arrange for this subtle difference.
+	
+	\item  Other than that, we may however - thanks to an intricate relationship between the values/prices of European puts and calls, known as \emph{put-call-parity} \cite{G03} - reuse the code from exercise (2) by only slightly changing some of the Greeks. In a zero-interest rate world, \emph{put-call-parity} is given by	
 	\begin{align*}
 	C^{\text{BS}}- P^{\text{BS}} = S - K
 	\end{align*}
 	
-	Differentiating on both sides then yields the relationship between the Greeks of the two different types of European call options:
+	Differentiating on both sides then yields the relationship between the Greeks of the two different types of European options:
 	
 	\begin{align}
 	\text{delta} &= \frac{\partial P^{\text{BS}}}{\partial S} = \frac{\partial C^{\text{BS}}}{\partial S} -1  \\
@@ -97,8 +103,9 @@
 	\text{theta} &= \frac{\partial P^{\text{BS}}}{\partial t} = \frac{\partial C^{\text{BS}}}{\partial t}
 	\end{align}
 	
-	From the above, we observe that the only thing we need to change in our code compared to exercise (2) is the delta (in effect, we only need to substract a factor $1$) and we are done.
+	So effectively, the only change we have to to in the code is to subtract a factor $1$ from the call delta to arrive at the put delta and we are done.
 	
+	\end{itemize}
 	
 	
 	\section*{Exercise 4}
