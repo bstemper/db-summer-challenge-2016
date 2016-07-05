@@ -104,27 +104,27 @@
 	\text{theta} &= \frac{\partial P^{\text{BS}}}{\partial t} = \frac{\partial C^{\text{BS}}}{\partial t}
 	\end{align}
 	
-	So effectively, the only change we have to to in the code is to subtract a factor $1$ from the call delta to arrive at the put delta and we are done.
+	So effectively, the only change we have to do in the code is to subtract a factor $1$ from the call delta to arrive at the put delta and we are done.
 	
 	\end{itemize}
 	
 	
 	\section*{Exercise 4}
 	
-		In this exercise, we are required to compute the 1-day VaR at the $99\%$ 		confidence level for a portfolio comprising stocks, European call options on these stocks and up-and-out calls on the DAX. In this exercise we determine as in exercise (1) the weighted variance-covariance matrix $\Sigma$ and weighted expected value $\mu$ for the log-returns at time $t$ of the assets. With this data we simulate the stock prices $S_{t+1}$ of tomorrow as
+		In this exercise, we are required to compute the 1-day VaR at the $99\%$ confidence level for a portfolio comprising stocks, European call options on these stocks and up-and-out calls on the DAX. As in exercise (1) we compute the weighted variance-covariance matrix $\Sigma$ and weighted expected value $\mu$ for the log-returns at time $t$ of the assets. With this data we simulate the stock prices $S_{t+1}$ of tomorrow as
 		a geometric Brownian motion, i.e.
 		\[
 			S_{t+1}=S_t\cdot \mathrm{e}^{\mathrm{chol}(\Sigma)^\mathrm{T} W_1+\left(\mu-\frac12 
 			\mathrm{diag}(\Sigma)\right)},
 		\]
-		where $W_1$ is a $15$-dimensional standard normal distributed random variable
-and $\mathrm{chol}(\Sigma)^T$ is the transposed Cholesky-matrix from the positive definite matrix $\Sigma$. Therefore $\mathrm{chol}(\Sigma)^\mathrm{T} W$ represents a vector with $15$ normal distributed random variables with the variance and covariances calculated at the market.  
+		where $W_1$ is a $15$-dimensional standard normal random variable
+and $\mathrm{chol}(\Sigma)^T$ is the transposed Cholesky-matrix from the positive definite matrix $\Sigma$. Therefore $\mathrm{chol}(\Sigma)^\mathrm{T} W$ represents a vector with $15$ normal random variables with the variance and covariances calculated at the market.  
 In the same way we simulate the DAX Value of tomorrow by using the more simple formula
 \[
 	\mathrm{DAX}_{t+1}=	\mathrm{DAX}_{t}\cdot \mathrm{e}^{\mathrm{VDAX}_t W_1+\left(\mu_{\mathrm{DAX}}-\frac12 
 			\mathrm{VDAX}_t\right)}
 \]
-by using the VDAX
+by using the VDAX.
 
 Afterwards we calculate the loss by plugging in this calculated future value in the valuation formulas of call prices, put prices and up-and-out call prices based on the Black-Scholes Framework, i.e.
 	\begin{align*}
@@ -143,8 +143,8 @@ Afterwards we calculate the loss by plugging in this calculated future value in 
 	\end{align*}
 	where $K$ represents the strike, $\tau$ the time to maturity, 	
 	$\sigma_\mathrm{ann}$	is the annualized volatility from exercise (2), $C$, $P$, $U$ the price of a call, put, up-and-out call in the Black-Scholes Framework and $\lambda$ represents the position in assets, calls, puts and up-and-out calls respectively. The formulas for calls and puts and contained in nearly all quantitative finance books and the formula for the up-and-out call was obtained by \cite{CLS94}. After calculating this loss we have simulated
-	$10000$ values of the future stock value and have sorted the generated losses in an upwards ordering. This method is called sorted Monte Carlo method in the sense of \cite{JK16}. Normally one would now set
-	$\mathrm{VaR}_t$ as the $V:=10000-\alpha\cdot 10000$ loss from the left in our sorted Loss data. As we know that the geometric Brownian motion does not reflect the real world perfectly we are additionally adding some machine learning algorithm to optimize this selection. In detail we take half of the prices of 2010 and calculate the VaR for a portfolio, which contains one asset of each stock with loss position $V$ for the second half of this year. Afterwards we calculate the realized performance of VaR by comparing our VaR with the realized losses (regard here that we can do this because the data from 2010 is historic data!). If the performance was better than $1-\alpha$ then we stop. Otherwise we set $V=V-1$ and start from the beginning. This positioning will then be used to calculate the VaR in the future.
+	$10000$ values of the future stock value and have sorted the generated losses in increasing order. This method is called sorted Monte Carlo method in the sense of \cite{JK16}. Normally one would now set
+	$\mathrm{VaR}_t$ as the $V:=10000-\alpha\cdot 10000$ loss from the left in our sorted Loss data. As we know that the geometric Brownian motion does not reflect the real world perfectly, we are additionally adding some machine learning algorithm to optimize this selection. In particular, we take half of the prices of 2010 and calculate the VaR for a portfolio, which contains one asset of each stock with loss position $V$ for the second half of this year. Afterwards we calculate the realized performance of VaR by comparing our VaR with the realized losses (regard here that we can do this because the data from 2010 is historic data!). If the performance was better than $1-\alpha$, we stop. Otherwise, we set $V=V-1$ and start from the beginning. This positioning will then be used to calculate the VaR in the future.
 		
 	
 
